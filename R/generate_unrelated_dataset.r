@@ -8,24 +8,10 @@ library(data.table)
 #========================================================================================#
 # exclude related individuals based on genetic relatedness
 #========================================================================================#
-f='/project/t/tpaus/tpaus/UKBB/datasets/ukb40646_23-03-2020/ukb43688_rel_s488264.dat'
-d = fread(f)
-d = d[order(d$ID1,d$ID2),]
-d = subset(d, ID1>0)
+load("tmp_d.NMR.RData")
+load("tmp_LDL.D_kinship.anal.Rdata")
 
-kinship.info = d
-kinship.info = subset(kinship.info,Kinship>0)
-ind2 = kinship.info$ID1 %in%kinship.info$ID2
-ind3 = kinship.info$ID1 > kinship.info$ID2
-ID1 = kinship.info$ID1
-ID2 = kinship.info$ID2
-kinship.info$ID1[ind3] <- ID2[ind3]
-kinship.info$ID2[ind3] <- ID1[ind3]
-kinship.info = kinship.info[order(kinship.info$ID1,kinship.info$ID2),]
-
-kinship.anal = subset(kinship.info,ID1 %in% d.NMR$eid & kinship.info$ID2 %in% d.NMR$eid);print(dim(kinship.anal))#5659
 ids = unique(c(kinship.anal$ID1,kinship.anal$ID2));print(length(ids))#10025
-
 fam.ids = list()
 i=1
 while(length(ids)>0){
@@ -80,6 +66,8 @@ for(i in 1:nrow(mat)){
   }
   cat("*",sep='')
 }
+save(mat,file="tmp_kinship_mat.Rdata")
+
 nrel = c()
 for(i in 1:nrow(mat)){
   nrel = c(nrel,sum(!is.na(mat[,i])))
@@ -135,3 +123,5 @@ for(i in 1:length(fam.ids)){
 }
 remove.ids = unlist(fam.ids)[!unlist(fam.ids)%in% include.ids]#1066
 d.NMR_indpt = subset(d.NMR,!eid %in% remove.ids);print(dim(d.NMR_indpt))#(40614-1066 = 39548)
+
+save(d.NMR_indpt,file="d.NMR_indpt.RData")
