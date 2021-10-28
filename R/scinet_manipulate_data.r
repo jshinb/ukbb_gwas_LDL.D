@@ -1,6 +1,13 @@
-############## Disorder Data Extraction ################
+############## Covariate Data Extraction #################################################
+# Run this script in SciNet cluster
+#
+# Before running the script, execute the following code:
 # module load gcc/9.2.0 r/4.0.3;R
-########################################################
+#
+# This script is available on the GitHub repository:
+# https://github.com/jshinb/ukbb_gwas_LDL.D/tree/main/R
+#
+##########################################################################################
 
 # load packages and define functions -----------------------------------------------------
 library(tidyverse)
