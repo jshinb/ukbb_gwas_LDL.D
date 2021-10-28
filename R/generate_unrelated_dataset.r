@@ -34,10 +34,8 @@ d6.sub = extract_variables(f,var.names,names(var.names))
 #NMR
 #========================================================================================#
 f5 = '/gpfs/fs1/home/t/tpaus/jshinb/ukbb/ukb48959/ukb48959.csv'
-var.names=c("eid"="eid",
-            "avg.LDL.D" = '23432-0.0',
-            "QC1" = '23704-0.0' #Clinical LDL Cholesterol, QC Flag
-)
+var.names=c("avg.LDL.D" = '23432-0.0',
+            "QC1" = '23704-0.0') #Clinical LDL Cholesterol, QC Flag
 d5.sub = extract_variables(f5,var.names,names(var.names))
 
 #QC1: Coding	Meaning
@@ -71,7 +69,7 @@ wlist = fread('/gpfs/fs1/home/t/tpaus/jshinb/ukbb/exclusion_sample_lists/w43688_
 d5.sub = subset(d5.sub,!eid %in% wlist$V1 & !is.na(avg.LDL.D))#n=118021
 
 #========================================================================================#
-# exclude non-british white
+# exclude non-British white
 #========================================================================================#
 d.NMR = subset(d5.sub,eid %in% d6.sub$eid[!is.na(d6.sub$white.british)])#n=98694
 save(d.NMR,file="tmp_d.NMR.RData")

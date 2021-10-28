@@ -47,7 +47,7 @@ cat(dir(file.path(ukbb_data_dir,'ukb_01-04-2020')),sep='\n')
 f0 = file.path(ukbb_data_dir,'ukb_01-04-2020/41449/ukb41449.csv')
 var.names=c("22001-0.0",paste("22009-0",1:40,sep="."))
 names(var.names) = c("genetic.sex",paste("gPC",1:40,sep=""))
-d0.sub = extract_variables(f0,fieldID=mycols,fieldName=mycols_name)
+d0.sub = extract_variables(f0,fieldID=var.names,fieldName=names(var.names))
 head(d0.sub,3)
 
 #========================================================================================#
@@ -98,6 +98,20 @@ head(d6.sub)
 #========================================================================================#
 # NMR with white-British unrelated individuals
 #========================================================================================#
-load ("data/d.NMR_indpt.RData")
+load ("data/d.NMR_indpt.RData")#d.NMR_indpt#n=93404
 
-# merge data sets -----------------------------------------------------------------------#
+#========================================================================================#
+# merge data sets
+#========================================================================================#
+d_merge = merge(subset(d.NMR_indpt,select=c(eid,avg.LDL.D,QC1)),
+                d0.sub,by='eid',sort=F);print(dim(d_merge))#93404
+d_merge = merge(d_merge,d3.sub,by='eid',sort=F,all.x=T);print(dim(d_merge))#[1] 93404    46
+d_merge = merge(d_merge,d4.sub,by='eid',sort=F,all.x=T);print(dim(d_merge))#[1] 93404    52
+d_merge = merge(d_merge,d6.sub,by='eid',sort=F,all.x=T);print(dim(d_merge))#[1] 93390    53 [height]
+
+#========================================================================================#
+# output the merged data set
+#========================================================================================#
+save(d_merge,file=file.path(wd,"data/d.NMR_merged.Rd"))
+     
+     
