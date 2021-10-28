@@ -1,15 +1,111 @@
-############## Disorder Data Extraction ################
+############## Covariate Data Extraction #################################################
+# Run this script in SciNet cluster
+# Before running the script, execute the following code:
 # module load gcc/9.2.0 r/4.0.3;R
-########################################################
+##########################################################################################
 
 library(tidyverse)
 library(data.table)
 
+# create subsets with the variables of interest-------------------------------------------
+extract_variables = function(fname,fieldID,fieldName){
+  if (!file.exists(fname)){stop ("file does not exist")
+  }else{
+    d = fread(fname)    
+    d.sub = subset(d, select=c('eid',fieldID))
+    names(d.sub) = c('eid',fieldName)
+    d.sub
+  }
+}
+
+#========================================================================================#
+# data directory
+#========================================================================================#
+ukbb_data_dir = '/project/t/tpaus/tpaus/UKBB/datasets'
+
+#========================================================================================#
+# ethnicity
+#========================================================================================#
+f= file.path(ukbb_data_dir,'ukb37194/ukb37194.csv')
+var.names=c(white.british = '22006-0.0')
+d6.sub = extract_variables(f,var.names,names(var.names))
+
+#========================================================================================#
+#NMR
+#========================================================================================#
+f5 = '/gpfs/fs1/home/t/tpaus/jshinb/ukbb/ukb48959/ukb48959.csv'
+var.names=c("eid"="eid",
+            "avg.LDL.D" = '23432-0.0',
+            "QC1" = '23704-0.0' #Clinical LDL Cholesterol, QC Flag
+)
+d5.sub = extract_variables(f5,var.names,names(var.names))
+
+#QC1: Coding	Meaning
+#1	Below limit of quantification
+#2	Citrate plasma
+#3	Degraded sample
+#4	High ethanol
+#5	Isopropyl alcohol
+#6	Low glutamine or high glutamate
+#7	Medium ethanol
+#8	Polysaccharides
+#9	Unknown contamination
+#10	Ethanol
+
+#	Description
+#23652	High Lactate
+#23653	High Pyruvate
+#23654	Low Glucose
+#23655	Low Protein
+#23651	Measurement Quality Flagged
+#23658	Sample Measured Date and Time
+#23659	Sample Prepared Date and Time
+#23649	Shipment Plate
+#23650	Spectrometer
+#23660	Well position within plate
+
+#========================================================================================#
+# exclude dropouts
+#========================================================================================#
+wlist = fread('/gpfs/fs1/home/t/tpaus/jshinb/ukbb/exclusion_sample_lists/w43688_20210201.csv')
+d5.sub = subset(d5.sub,!eid %in% wlist$V1 & !is.na(avg.LDL.D))#n=118021
+
+#========================================================================================#
+# exclude non-british white
+#========================================================================================#
+d.NMR = subset(d5.sub,eid %in% d6.sub$eid[!is.na(d6.sub$white.british)])#n=98694
+save(d.NMR,file="tmp_d.NMR.RData")
+
 #========================================================================================#
 # exclude related individuals based on genetic relatedness
 #========================================================================================#
-load("tmp_d.NMR.RData")
-load("tmp_LDL.D_kinship.anal.Rdata")
+f='/project/t/tpaus/tpaus/UKBB/datasets/ukb40646_23-03-2020/ukb43688_rel_s488264.dat'
+d = fread(f)
+d = d[order(d$ID1,d$ID2),]
+d = subset(d, ID1>0)
+
+kinship.info = d
+kinship.info = subset(kinship.info,Kinship>0)
+ind2 = kinship.info$ID1 %in%kinship.info$ID2
+ind3 = kinship.info$ID1 > kinship.info$ID2
+ID1 = kinship.info$ID1
+ID2 = kinship.info$ID2
+kinship.info$ID1[ind3] <- ID2[ind3]
+kinship.info$ID2[ind3] <- ID1[ind3]
+kinship.info = kinship.info[order(kinship.info$ID1,kinship.info$ID2),]
+
+kinship.anal = subset(kinship.info,ID1 %in% d.NMR$eid & kinship.info$ID2 %in% d.NMR$eid)
+print(dim(kinship.anal))#5659
+save(kinship.anal,file="tmp_LDL.D_kinship.anal.Rdata")
+
+#========================================================================================#
+# exclude related individuals based on genetic relatedness
+#========================================================================================#
+load.data=F
+if(load.data){
+  load("tmp_d.NMR.RData")
+  load("tmp_LDL.D_kinship.anal.Rdata")
+}
 
 ids = unique(c(kinship.anal$ID1,kinship.anal$ID2));print(length(ids))#10025
 fam.ids = list()
