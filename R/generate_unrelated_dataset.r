@@ -121,7 +121,7 @@ for(i in 1:length(fam.ids)){
   sample.ids = fam.ids[[i]]
   include.ids = c(include.ids,sample(sample.ids,size = 1));print(length(include.ids))
 }
-remove.ids = unlist(fam.ids)[!unlist(fam.ids)%in% include.ids]#1066
+remove.ids = unlist(fam.ids)[!unlist(fam.ids)%in% include.ids]#5290 individuals were removed from 98634 individuals
 d.NMR_indpt = subset(d.NMR,!eid %in% remove.ids);print(dim(d.NMR_indpt))#(40614-1066 = 39548)
 
 save(d.NMR_indpt,file="d.NMR_indpt.RData")
