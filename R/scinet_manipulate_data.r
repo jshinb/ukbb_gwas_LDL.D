@@ -2,6 +2,7 @@
 # module load gcc/9.2.0 r/4.0.3;R
 ########################################################
 
+# load packages and define functions -----------------------------------------------------
 library(tidyverse)
 library(data.table)
 
@@ -16,7 +17,11 @@ extract_variables = function(fname,fieldID,fieldName){
   }
 }
 
-# data directories 
+# set working directory ------------------------------------------------------------------
+wd = '/gpfs/fs1/home/t/tpaus/jshinb/ukbb_LDL.D_gwas'
+setwd(wd)
+
+# data directories -----------------------------------------------------------------------
 ukbb_data_dir = '/project/t/tpaus/tpaus/UKBB/datasets'
 dir(ukbb_data_dir)
 #ukb26444
@@ -35,6 +40,7 @@ cat(dir(file.path(ukbb_data_dir,'ukb_01-04-2020')),sep='\n')
 #41449
 #41450
 
+# read in data files ---------------------------------------------------------------------
 #========================================================================================#
 # genetic sex and genotype PC
 #========================================================================================#
@@ -46,7 +52,6 @@ head(d0.sub,3)
 
 #========================================================================================#
 # age, sex (not run)
-#========================================================================================#
 dont.run <- function(){
   # age, sex
   f2 = file.path(ukbb_data_dir,'ukb26444/ukb26444.csv')
@@ -54,6 +59,7 @@ dont.run <- function(){
   d2.sub = extract_variables(f2,fieldID = var.names,fieldName=names(var.names))
   head(d2.sub)  
 }
+#========================================================================================#
 
 #========================================================================================#
 # fasting time, height, medication
@@ -79,7 +85,6 @@ var.names = c(
 "SBP0_manual" = "93-0.0",
 "SBP0_auto" = "4080-0.0",
 'ethnicity' = '21000-0.0')
-
 d4.sub = extract_variables(f4,fieldID=var.names,fieldName=names(var.names))
 head(d4.sub)
 
@@ -89,3 +94,10 @@ head(d4.sub)
 f6=file.path(ukbb_data_dir,'ukb41763/ukb41763.csv')
 d6.sub = extract_variables(f6,"50-0.0","height")
 head(d6.sub)
+
+#========================================================================================#
+# NMR with white-British unrelated individuals
+#========================================================================================#
+load ("data/d.NMR_indpt.RData")
+
+# merge data sets -----------------------------------------------------------------------#
