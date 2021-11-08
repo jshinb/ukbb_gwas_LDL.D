@@ -86,7 +86,8 @@ f='/project/t/tpaus/tpaus/UKBB/datasets/ukb40646_23-03-2020/ukb43688_rel_s488264
 d = fread(f)
 d = d[order(d$ID1,d$ID2),]
 d = subset(d, ID1>0)
-
+#----------------------------------------------------------------------------------------
+# kinship matrix
 kinship.info = d
 kinship.info = subset(kinship.info,Kinship>0)
 ind2 = kinship.info$ID1 %in%kinship.info$ID2
@@ -101,9 +102,8 @@ kinship.anal = subset(kinship.info,ID1 %in% d.NMR$eid & kinship.info$ID2 %in% d.
 print(dim(kinship.anal))#5659
 save(kinship.anal,file="tmp_LDL.D_kinship.anal.Rdata")
 
-#========================================================================================#
-# exclude related individuals based on genetic relatedness
-#========================================================================================#
+#----------------------------------------------------------------------------------------
+# construct kinship matrix
 load.data=F
 if(load.data){
   load("tmp_d.NMR.RData")
@@ -132,7 +132,6 @@ subset(kinship.anal,ID1%in%tmp.fam.ids&ID2%in% tmp.fam.ids)
 mat = matrix(NA,nrow=length(tmp.fam.ids),ncol=length(tmp.fam.ids))
 rownames(mat) <- colnames(mat) <- tmp.fam.ids
 
-# construct kinship mat
 for(i in 1:nrow(mat)){
   id1 = as.numeric(rownames(mat)[i]);print(id1)
   for(j in c(1:nrow(mat))[-i]){
@@ -167,6 +166,8 @@ for(i in 1:nrow(mat)){
 }
 save(mat,file="tmp_kinship_mat.Rdata")
 
+#----------------------------------------------------------------------------------------
+# randomly select one individual from each constructed family 
 nrel = c()
 for(i in 1:nrow(mat)){
   nrel = c(nrel,sum(!is.na(mat[,i])))
@@ -223,4 +224,6 @@ for(i in 1:length(fam.ids)){
 remove.ids = unlist(fam.ids)[!unlist(fam.ids)%in% include.ids]#5290 individuals were removed from 98634 individuals
 d.NMR_indpt = subset(d.NMR,!eid %in% remove.ids);print(dim(d.NMR_indpt))#(40614-1066 = 39548)
 
+#----------------------------------------------------------------------------------------
+# save resulting 'independent data set'
 save(d.NMR_indpt,file="d.NMR_indpt.RData")
